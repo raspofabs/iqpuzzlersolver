@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+char solutionfilename[256];
 const int WIDTH = 11;
 const int HEIGHT = 5;
 struct Piece {
@@ -102,14 +103,14 @@ PuzzleState Clear() {
 	memset( &ps, 0, sizeof( ps ) );
 	return ps;
 }
-void PrintState( const PuzzleState &ps ) {
+void PrintState( const PuzzleState &ps, FILE *fp = stdout ) {
 	for( int y = 0; y < HEIGHT; ++y ) {
 		for( int x = 0; x < WIDTH; ++x ) {
 			bool on = ps.filled[x+y*WIDTH];
 			char c = on ? ps.filled[x+y*WIDTH] : '.';
-			printf( "%c", c );
+			fprintf( fp, "%c", c );
 		}
-		printf( "\n" );
+		fprintf( fp, "\n" );
 	}
 }
 
@@ -150,15 +151,20 @@ void Solve( PiecesLeft pl, const PuzzleState &ps ) {
 	if( pl.size() == 0 ) {
 		printf( "Solution:\n" );
 		PrintState( ps );
+		PrintState( ps, fopen( solutionfilename, "w" ) );
 		exit( 0 );
 	}
 	int i = *(pl.begin());
 	Piece piece = pieces[i];
+	//printf( "Attempting to fit in piece: %c\n", piece.id );
+
 	pl.erase( i );
 	for( int r = 0; r < 8; ++r ) {
-		for( int y = 0; y < HEIGHT; ++y ) {
-			for( int x = 0; x < WIDTH; ++x ) {
-				Piece newPiece = Rot( piece, r );
+		Piece newPiece = Rot( piece, r );
+		//printf( "Trying this way:\n" );
+		//PrintPiece( newPiece );
+		for( int y = -2; y < HEIGHT; ++y ) {
+			for( int x = -2; x < WIDTH; ++x ) {
 				if( PieceFits( ps, newPiece, x, y ) ) {
 					PuzzleState newState = FillState( ps, newPiece, x, y );
 					Solve( pl, newState );
@@ -213,12 +219,17 @@ int main( int argc, char *argv[] ) {
 	PiecesLeft pl;
 	if( argc == 2 ) {
 		LoadState( ps, pl, argv[1] );
+		sprintf( solutionfilename, "SOLVED_%s", argv[1] );
+		printf( "Solving\n");
+		PrintRemainingPieces( pl );
+		Solve( pl, ps );
+		printf( "Unsolvable?\n");
 	} else {
-		LoadState( ps, pl, "puzz_64.txt" );
+		Piece e = pieces[4];
+		for( int ori = 0; ori < 8; ++ori ) {
+			printf( "Piece rotated %i\n", ori );
+			PrintPiece( Rot( e, ori ) );
+			printf( "\n" );
+		}
 	}
-
-	printf( "Solving\n");
-	PrintRemainingPieces( pl );
-	Solve( pl, ps );
-	printf( "Unsolvable?\n");
 }

@@ -7,9 +7,7 @@ OPTIMISE=-O2
 DEBUG=-ggdb3
 CFLAGS= -fno-strict-aliasing -DUNIV_LINUX \
 	-Werror -Wall -Wextra $(OPTIMISE) $(DEBUG)
-LIBS=-Wl,-Bsymbolic-functions \
-	-rdynamic -lrt -lpthread \
-	-lGL -lglfw
+#LIBS=-Wl,-Bsymbolic-functions
 
 RAW_TARGETOBJECTS=$(TARGETS:%=%.o)
 TARGETOBJECTS=$(RAW_TARGETOBJECTS:%=build/%)
@@ -38,4 +36,5 @@ err: build/err.o $(COMMONOBJECTS) $(CORE) $(TINYJS)
 	$(CC) build/err.o $(COMMONOBJECTS) $(CORE) $(TINYJS) -o err $(LIBS)
 
 run: $(TARGETS)
+	#./pzsolve p71
 	./pzsolve
